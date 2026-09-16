@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="icon_bg" data-name="icon bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ed1c24;
+      }
+    </style>
+  </defs>
+  <rect x=".39" y="53.4" width="37.95" height="36.08"/>
+  <rect x=".39" y="272.92" width="37.95" height="36.08"/>
+  <rect x="51.1" y="51.67" width="257.33" height="257.33"/>
+  <rect x="321.19" y="53.4" width="37.95" height="36.08"/>
+  <rect x="322.8" y="269.67" width="37.95" height="36.08"/>
+  <rect x="50.16" y="1.84" width="37.95" height="36.08" transform="translate(49.26 89.01) rotate(-90)"/>
+  <rect x="269.77" y="1.84" width="37.95" height="36.08" transform="translate(268.87 308.63) rotate(-90)"/>
+  <rect x="269.77" y="322.75" width="37.95" height="36.08" transform="translate(629.54 52.04) rotate(90)"/>
+  <rect x="50.16" y="322.75" width="37.95" height="36.08" transform="translate(409.92 271.65) rotate(90)"/>
+  <rect class="cls-1" x="69.32" y="67" width="220.88" height="225.96"/>
+</svg>

@@ -1,0 +1,139 @@
+{
+  "_README": [
+    "TEMPLATE — this file is never rendered. pr-icons copies it to the plugin root as icons.json,",
+    "fills in the placeholders, and passes THAT path as config_path on every MCP call.",
+    "Keys beginning with _ are documentation and must be deleted from the real icons.json.",
+    "",
+    "FIRST, BEFORE WRITING ANY OF THIS: run preview_backgrounds(output_dir) and show the user",
+    "the contact sheet. They pick a fill style (gradient / solid / none) and a shape. The",
+    "defaults.background below is only a PLACEHOLDER — shipping it unchanged is how every",
+    "plugin ends up with the same blue blob nobody chose. See _styles for all four treatments.",
+    "",
+    "Resolution order:  defaults < subcategories[sub] < components[i].",
+    "Anything omitted is inherited; set \"background\": {} on a component for no background at all,",
+    "or \"background\": { \"shape\": {...}, \"icon\": {} } to keep your own shape and drop an inherited",
+    "background icon. A component-level fg_color beats an inherited fg gradient.",
+    "",
+    "Hand-made icon? Set \"custom\": true on the component: generate_icon skips it and never",
+    "overwrites Icons/[XX]_<Name>.png — you still run add_to_resources to embed it.",
+    "",
+    "Run list_background_shapes() for the valid shape.type values, or preview_backgrounds() to",
+    "SEE them — they are the SVG filenames in this server's backgrounds/ folder, not a fixed",
+    "list in code.",
+    "",
+    "Glyph placement is authored in each background SVG (a #ed1c24 rect), so you do NOT position",
+    "the foreground here. Use the optional per-icon \"glyph\" block only to override that box.",
+    "",
+    "Some shapes (trapezoid, saddle-shape, database, l-border, quarter-circle-right,",
+    "right-triangle, half-circle) put the glyph partly outside the artwork by design — give those",
+    "a DARK fg_color, or a white glyph will disappear where it leaves the shape."
+  ],
+
+  "_styles": {
+    "_note": [
+      "The four background treatments, exactly as preview_backgrounds renders them.",
+      "Copy ONE of these in as a `background` block (at defaults, subcategory or component level).",
+      "Swap \"rounded-square\" for any slug from the contact sheet."
+    ],
+    "_gradient": {
+      "background": {
+        "shape": {
+          "type": "rounded-square",
+          "gradient": { "from": "#2D6CDF", "to": "#1B3A8B", "angle": 135 }
+        }
+      }
+    },
+    "_solid": {
+      "background": {
+        "shape": { "type": "rounded-square", "fill": "#2D6CDF" }
+      }
+    },
+    "_none": {
+      "_effect": "No background at all — the glyph alone, filling the canvas. Needs a dark fg_color.",
+      "background": {}
+    },
+    "_shape_plus_watermark": {
+      "_effect": "Any shape above, with a second glyph washed in behind the foreground.",
+      "background": {
+        "shape": { "type": "rounded-square", "fill": "#2D6CDF" },
+        "icon": { "iconify_id": "[prefix:name]", "color": "#FFFFFF", "opacity": 0.45 }
+      }
+    }
+  },
+
+  "plugin_name": "[PluginName]",
+  "plugin_prefix": "[XX]",
+  "_paths": "Both paths are relative to this file once it lives at the plugin root.",
+  "resources_path": "Icons",
+  "resx_path": "Properties/Resources.resx",
+
+  "_choose": [
+    "PLACEHOLDER — replace the background below with the style the user picked from the",
+    "contact sheet. Do not ship this value just because it renders."
+  ],
+  "defaults": {
+    "size": 24,
+    "fg_color": "#FFFFFF",
+    "background": {
+      "shape": {
+        "type": "rounded-square",
+        "gradient": { "from": "#2D6CDF", "to": "#1B3A8B", "angle": 135 }
+      }
+    }
+  },
+
+  "plugin_icon": {
+    "_note": "The 16x16 ribbon icon. Renders to [XX]_[PluginName]Logo, wired by pr-assembly.",
+    "size": 16,
+    "fg_iconify_id": "[prefix:name]",
+    "fg_color": "#FFFFFF",
+    "background": {
+      "shape": {
+        "type": "rounded-square",
+        "gradient": { "from": "#2D6CDF", "to": "#1B3A8B", "angle": 135 }
+      }
+    }
+  },
+
+  "subcategories": {
+    "[Subcategory]": {
+      "_note": "One consistent background treatment per subcategory; the glyph carries the meaning.",
+      "background": {
+        "shape": { "type": "rounded-square", "fill": "#2D6CDF" },
+        "icon": { "iconify_id": "[prefix:name]", "color": "#FFFFFF", "opacity": 0.45 }
+      },
+      "fg_color": "#FFFFFF"
+    }
+  },
+
+  "components": [
+    {
+      "_note": "Inherits everything from its subcategory; only the glyph differs.",
+      "name": "[ComponentName]",
+      "subcategory": "[Subcategory]",
+      "fg_iconify_id": "[prefix:name]"
+    },
+    {
+      "_note": "No background — the glyph alone, filling the canvas.",
+      "name": "[GlyphOnlyComponent]",
+      "subcategory": "[Subcategory]",
+      "fg_iconify_id": "[prefix:name]",
+      "background": {}
+    },
+    {
+      "_note": "Hand-made PNG already in Icons/ — never rendered or overwritten.",
+      "name": "[HandMadeComponent]",
+      "subcategory": "[Subcategory]",
+      "custom": true
+    },
+    {
+      "_note": "Per-component overrides: own shape, gradient foreground, and a manual glyph box.",
+      "name": "[SpecialComponent]",
+      "subcategory": "[Subcategory]",
+      "fg_iconify_id": "[prefix:name]",
+      "background": { "shape": { "type": "circle", "fill": "#2D6CDF" } },
+      "fg": { "from": "#FFFFFF", "to": "#BBD0FF", "angle": 90 },
+      "glyph": { "fit": 0.6, "anchor": [0.5, 0.5] }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="icon_bg" data-name="icon bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ed1c24;
+      }
+    </style>
+  </defs>
+  <polygon points="255.26 .69 106.42 .69 1.18 105.93 1.18 254.76 106.42 360 255.26 360 360.5 254.76 360.5 105.93 255.26 .69"/>
+  <rect class="cls-1" x="72.12" y="54" width="214.07" height="249"/>
+</svg>

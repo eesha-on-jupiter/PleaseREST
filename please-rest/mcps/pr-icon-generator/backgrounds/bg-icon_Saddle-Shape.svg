@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="icon_bg" data-name="icon bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ed1c24;
+      }
+    </style>
+  </defs>
+  <path d="M0,161v199.01h360v-199.01l-180,88.45L0,161Z"/>
+  <rect class="cls-1" x="60.75" y="20" width="243.65" height="265.63"/>
+</svg>

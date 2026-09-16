@@ -1,0 +1,24 @@
+{
+  "name": "please-rest",
+  "displayName": "PleaseREST",
+  "version": "1.0.0",
+  "description": "Politely turns any REST API into a Grasshopper plugin — so you can take that much needed rest. Automates the repeatable parts: API mapping, call validation, codegen, icons, tests, and Food4Rhino publish. You plan, review, and test. PleaseREST does the rest.",
+  "author": {
+    "name": "Eesha Jain",
+    "email": "eesha.jain08@gmail.com"
+  },
+  "mcpServers": {
+    "pr-api-extractor": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcps/pr-api-extractor/server.py"]
+    },
+    "pr-api-tester": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcps/pr-api-tester/server.py"]
+    },
+    "pr-icon-generator": {
+      "command": "python",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcps/pr-icon-generator/server.py"]
+    }
+  }
+}

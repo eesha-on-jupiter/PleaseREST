@@ -1,0 +1,16 @@
+pytest
+pytest-asyncio
+
+# MCP framework — every server.py does `from mcp.server.fastmcp import FastMCP`
+mcp[cli]
+
+# pr-icon-generator dependencies (test_rendering.py, test_generate_icon.py)
+httpx
+resvg-py
+pillow
+
+# pr-api-extractor dependencies (test_extract_openapi.py)
+pyyaml
+beautifulsoup4
+
+# pr-api-tester — no extra deps beyond stdlib + httpx (already listed above)

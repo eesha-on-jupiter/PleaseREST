@@ -1,0 +1,36 @@
+# --- Internal, never published -------------------------------------------------
+# Dogfood run logs: bug write-ups, dead ends, and the workspace/document IDs of the
+# builds they came from. They are PleaseREST's build record, not its documentation.
+dogfood/
+
+# Machine-local Claude Code state — at every level, including please-rest/.claude/.
+# settings.local.json is pre-approved tool permissions (machine-specific, and a footgun for
+# anyone who clones); launch.json is a local run config with absolute paths. Neither is read
+# when the plugin is installed — the same rule pr-gh-package gives generated plugins.
+.claude/
+settings.local.json
+
+# --- Working files, not part of the plugin ---------------------------------------
+PleaseREST-Workshop.pptx
+PleaseREST-spec-conversation.html
+icons-background.ai
+
+# --- Python ----------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# --- Editors / OS ----------------------------------------------------------------
+.vs/
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# --- Local scratch ----------------------------------------------------------------
+.env
+*.local
+Icons/_preview/

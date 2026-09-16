@@ -1,0 +1,15 @@
+{
+  "name": "please-rest",
+  "description": "PleaseREST — the Claude Code pipeline that turns a REST API reference into a working Grasshopper plugin for Rhino.",
+  "owner": {
+    "name": "Eesha Jain",
+    "email": "eesha.jain08@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "please-rest",
+      "source": "./please-rest",
+      "description": "Politely turns any REST API into a Grasshopper plugin — so you can take that much needed rest. Automates the repeatable parts: API mapping, call validation, codegen, icons, tests, and Food4Rhino publish. You plan, review, and test. PleaseREST does the rest."
+    }
+  ]
+}
