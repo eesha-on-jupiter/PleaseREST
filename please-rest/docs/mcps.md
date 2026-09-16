@@ -74,7 +74,7 @@ Renders layered icons and injects them into the plugin's resources. Driven by `i
 | Tool | Purpose |
 |---|---|
 | `generate_icon(component_name, config_path, subcategory?, iconify_id?)` | One 24×24 component icon |
-| `generate_plugin_icon(config_path)` | The 16×16 plugin / ribbon category icon |
+| `generate_plugin_icon(config_path, size?, out_name?)` | The 16×16 plugin / ribbon category icon; `size=1024, out_name="[XX]_Plugin_Icon.png"` renders the large README / Food4Rhino logo to the plugin root instead |
 | `list_background_shapes()` | The background shape names currently available |
 | `preview_backgrounds(output_dir, fg_iconify_id?, styles?, shapes?, size?, fill?, gradient_from?, gradient_to?, gradient_angle?, fg_color?, bg_icon_iconify_id?)` | Render every shape in each fill style so the options can be **seen** before choosing |
 | `add_to_resources(component_name, config_path)` | Embed a generated PNG into `Resources.resx` + `Resources.Designer.cs` |

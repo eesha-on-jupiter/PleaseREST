@@ -6,6 +6,9 @@ PleaseREST is a Claude Code plugin that automates the repeatable parts of buildi
 Grasshopper REST API plugin: API discovery, call extraction, HTTP validation, code
 scaffolding, icon generation, tests, packaging, and Food4Rhino/GitHub publish.
 
+> This is the plugin folder's readme. The **[repository readme](../README.md)** is the full
+> reference — every command, skill, agent, MCP tool, phase and gate in one page.
+
 **You plan, review, and test. PleaseREST does the rest.**
 
 Install it once, then run `/rest-new-plugin` to drive any REST API through a guided
