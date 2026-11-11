@@ -204,8 +204,71 @@ def test_add_to_resources_unrecognised_designer_is_not_corrupted(mock_run, _sys,
     assert (tmp_path / "Properties" / "Resources.Designer.cs").read_text() == "// not a designer file at all"
 
 
+# ── add_to_resources on macOS / Linux — direct .resx write, no PowerShell ─────
+
+import base64
+import xml.etree.ElementTree as ET
+
+PNG_A = b"\x89PNG\r\n\x1a\n" + b"A" * 200
+PNG_B = b"\x89PNG\r\n\x1a\n" + b"B" * 50
+
+
+def _resx_data(tmp_path):
+    root = ET.parse(tmp_path / "Properties" / "Resources.resx").getroot()
+    return {d.get("name"): d for d in root.findall("data")}
+
+
 @patch("server.platform.system", return_value="Darwin")
-def test_add_to_resources_non_windows_clear_error(_sys, tmp_path):
+@patch("server.subprocess.run", side_effect=AssertionError("PowerShell must not run off Windows"))
+def test_add_to_resources_non_windows_writes_resx(_run, _sys, tmp_path):
     cfg = _setup(tmp_path)
+    (tmp_path / "Icons" / "TP_FindBoard.png").write_bytes(PNG_A)
     r = server.add_to_resources("FindBoard", config_path=cfg)
-    assert "Windows-only" in r
+    assert "Resources.resx and Resources.Designer.cs" in r
+    root = ET.parse(tmp_path / "Properties" / "Resources.resx").getroot()
+    # the empty <root/> scaffold gained the headers GenerateResource requires
+    assert {h.get("name") for h in root.findall("resheader")} == {"resmimetype", "version", "reader", "writer"}
+    node = _resx_data(tmp_path)["TP_FindBoard"]
+    assert node.get("type") == "System.Drawing.Bitmap, System.Drawing"
+    assert node.get("mimetype") == "application/x-microsoft.net.object.bytearray.base64"
+    assert base64.b64decode("".join(node.find("value").text.split())) == PNG_A
+    text = (tmp_path / "Properties" / "Resources.Designer.cs").read_text(encoding="utf-8")
+    assert text.count("Bitmap TP_FindBoard") == 1
+
+
+@patch("server.platform.system", return_value="Linux")
+def test_add_to_resources_non_windows_replaces_and_keeps_others(_sys, tmp_path):
+    cfg = _setup(tmp_path)
+    (tmp_path / "Icons" / "TP_FindBoard.png").write_bytes(PNG_A)
+    (tmp_path / "Icons" / "TP_Existing.png").write_bytes(PNG_B)
+    server.add_to_resources("Existing", config_path=cfg)
+    server.add_to_resources("FindBoard", config_path=cfg)
+    (tmp_path / "Icons" / "TP_FindBoard.png").write_bytes(PNG_B)      # re-render, then re-embed
+    r = server.add_to_resources("FindBoard", config_path=cfg)
+    assert "already declares" in r
+    raw = (tmp_path / "Properties" / "Resources.resx").read_text(encoding="utf-8")
+    assert raw.count('name="TP_FindBoard"') == 1 and raw.count('name="TP_Existing"') == 1
+    data = _resx_data(tmp_path)
+    assert base64.b64decode("".join(data["TP_FindBoard"].find("value").text.split())) == PNG_B
+    assert base64.b64decode("".join(data["TP_Existing"].find("value").text.split())) == PNG_B
+
+
+def test_write_resx_bitmap_preserves_foreign_nodes(tmp_path):
+    resx = tmp_path / "Resources.resx"
+    server.write_resx_bitmap(resx, "TP_One", PNG_A)                    # creates the file
+    text = resx.read_text(encoding="utf-8").replace(
+        "</root>", '  <data name="Greeting" xml:space="preserve">\n    <value>hello</value>\n  </data>\n</root>')
+    resx.write_text(text, encoding="utf-8")
+    server.write_resx_bitmap(resx, "TP_One", PNG_B)
+    root = ET.parse(resx).getroot()
+    names = [d.get("name") for d in root.findall("data")]
+    assert sorted(names) == ["Greeting", "TP_One"]
+    assert root.find("data[@name='Greeting']/value").text == "hello"
+
+
+def test_write_resx_bitmap_rejects_non_resx(tmp_path):
+    resx = tmp_path / "Resources.resx"
+    resx.write_text('<resheader name="x"/> not xml', encoding="utf-8")
+    import pytest
+    with pytest.raises(ValueError):
+        server.write_resx_bitmap(resx, "TP_One", PNG_A)

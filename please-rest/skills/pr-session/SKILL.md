@@ -238,9 +238,9 @@ the user must know exactly what to do and how to respond. Use the labels and per
 | 2 | Review the component list, subcategories, and I/O wiring. | "yes", or say what to add / remove / rename. |
 | 3 | Choose which AEC features to include (or describe a custom one). | List the features to add, or "none". |
 | 4 | Review the calls that failed validation; decide each one. | Per entry: "fix", "skip", or "flag for v2". |
-| 5 | Point GrasshopperDeveloperSettings at `bin/Debug/net7.0-windows/` (Rh8, .NET Core 8) or `bin/Debug/net48/` (Rh7), restart Rhino, drop the auth component, press the button. | "works", or paste the exact Status / error; or "defer to Gate 6". |
+| 5 | Point GrasshopperDeveloperSettings at `bin/Debug/net7.0-windows/` (Rh8 / Rh9 Win, .NET Core), `bin/Debug/net7.0/` (Rh8 / Rh9 Mac) or `bin/Debug/net48/` (Rh7), restart Rhino, drop the auth component, press the button. | "works", or paste the exact Status / error; or "defer to Gate 6". |
 | 6 | Open the pre-built `demos/` files (paste your token into the Token panel first) and confirm each works live. If Phase 12 was degraded, build them from `demos/README.md`. | "all good", or report the component + bug. |
-| 7 | Install the .yak on Rhino 7 Win, Rhino 8 Win, and Rhino 8 Mac. | "passes", or name the platform + the bug. |
+| 7 | Install the .yak on Rhino 7 Win, Rhino 8 Win, and Rhino 8 Mac (Rhino 9 installs the `rh8_0` packages — test there instead when that is what is installed). | "passes", or name the platform + the bug. |
 
 **Phase glyph (left column):** `✓` = in `completed_phases`; `►` = `current_phase` and not yet
 complete (used mid-phase / on resume); blank = upcoming.

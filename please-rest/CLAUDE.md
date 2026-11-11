@@ -136,7 +136,8 @@ Load when the file type matches:
     narrows to named slugs; `bg_icon_iconify_id` adds the watermark layer. Needs no `icons.json` —
     colours come in as arguments. This is what makes the options **visible**; `/rest-icon-preview`
     wraps it, and `pr-icons` must run it before authoring.
-  - `add_to_resources(component_name, config_path)` — **Windows-only** (PowerShell `ResXResourceWriter`);
+  - `add_to_resources(component_name, config_path)` — cross-platform: PowerShell `ResXResourceWriter` on Windows, `write_resx_bitmap()` (a direct
+    write of the same bytearray.base64 Bitmap `<data>` node, no .NET needed) on macOS / Linux;
     Designer.cs de-dupe matches the `Bitmap <Name>` property itself, not the VS comment pattern.
   - Style resolution `defaults < subcategories[sub] < components[i]`: an explicit `"background": {}`
     (or `"icon": {}` inside it) clears the inherited layer — only an *omitted* key inherits; a

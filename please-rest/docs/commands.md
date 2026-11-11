@@ -81,7 +81,7 @@ component in `icons.json`, then `generate_plugin_icon` for the 16×16 ribbon ico
 name, renders just that one. Skips `"custom": true` components (a hand-made PNG is never
 overwritten, but is still embedded), tracks `phase_progress["11"].rendered` so a mid-render resume
 picks up where it stopped, and ends with the same quick "glance at Icons/" review Phase 11 uses.
-Does not re-author `icons.json`. The resx embed is Windows-only.
+Does not re-author `icons.json`. The resx embed works on Windows, macOS and Linux.
 
 ## Extending & packaging
 

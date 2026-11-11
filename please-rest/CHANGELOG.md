@@ -11,6 +11,24 @@ for the resume-time check (see `pr-session`).
 Bump `plugin.json`'s `version` and add an entry here whenever a change to a skill, agent, command,
 or MCP would change what an already-completed phase produces — see `CLAUDE.md`.
 
+## 1.1.0 — 2026-11-11
+
+Rhino 9 and macOS as a build machine. No generated file changes shape — a plugin built on 1.0.0
+does not need any phase rerun.
+
+- **Phase 11 (icons)** — `add_to_resources` now works on macOS / Linux. It used to return a
+  "Windows-only" error there, which left Phase 11 unfinishable on a Mac. Off Windows the Bitmap
+  `<data>` node is written directly (`write_resx_bitmap`), in the bytearray.base64 form
+  `ResXResourceWriter` emits; an empty `<root/>` resx gains the standard resheaders. Windows still
+  goes through PowerShell, unchanged.
+- **Phase 1 (preflight), Phase 15 (package)** — yak is probed in Rhino 9 first, then 8, then 7.
+  Rhino 9 installs the `rh8_0` packages; there is no `rh9_0` package to build.
+- **Phase 8 (scaffold)** — documented, not changed: the `net7.0-windows;net7.0;net48` csproj builds
+  clean on .NET SDK 10 and its `net7.0` / `net7.0-windows` output loads in Rhino 9 (.NET 10).
+- **Phase 9 / Gate 5, Phase 12 / Gate 6** — Rhino 9 instructions: which build folder to load,
+  `MCPStart` (not `MCPConnect`) starts the bridge listener, loading a dev `.gha` without a restart,
+  and driving `ButtonComponent.TriggerButton()` through the bridge's C# tool.
+
 ## 1.0.0 — 2026-09-16
 
 First public release.

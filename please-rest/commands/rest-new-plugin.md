@@ -36,8 +36,8 @@ setup, so check the environment before asking a single question)*:
 |---|---|---|
 | PleaseREST loaded | `/mcp` shows `please-rest → pr-api-extractor, pr-api-tester, pr-icon-generator (connected)` | run `claude plugin validate <plugin-dir>`; see docs/troubleshooting.md |
 | MCP Python deps | `python -c "import mcp, httpx, resvg_py, PIL, yaml, bs4"` (Python ≥ 3.10) | `pip install -r <plugin>/mcps/pr-api-extractor/requirements.txt` (and the other two). If `python` itself is **not found** (macOS/Linux have only `python3`; Windows may hit the Store stub), that — not the deps — is why row 1 failed: see docs/troubleshooting.md, then restart Claude Code |
-| .NET SDK | `dotnet --version` → SDK 8.x recommended (builds net48 + net7.0 targets) | install .NET SDK 8 + the net48 targeting pack |
-| yak | probe `C:\Program Files\Rhino 8\System\Yak.exe` (or Rhino 7) / `/Applications/Rhino 8.app/Contents/Resources/bin/yak` | only blocks Phase 15 — note it, continue |
+| .NET SDK | `dotnet --version` → SDK 8.x or newer (8.x recommended; 10.x verified — it builds net48 + net7.0 targets too) | install .NET SDK 8 + the net48 targeting pack |
+| yak | probe `C:\Program Files\Rhino 9\System\Yak.exe` (then Rhino 8, Rhino 7) / `/Applications/Rhino 9.app/Contents/Resources/bin/yak` (then `Rhino 8.app`) — full list in pr-yak-package | only blocks Phase 15 — note it, continue |
 | Token | `PLEASE_REST_TOKEN` set and non-empty | needed from Phase 7 — note it, continue |
 | Rhino bridge | optional — `claude mcp list` shows a Grasshopper MCP | only affects Phase 12 Step B — Gate 6 degrades to manual |
 
@@ -301,6 +301,7 @@ Then `dotnet build` (all three targets) — Gate 5 needs a loadable `.gha`.
 Gate 5 — test the auth component in Rhino
   1. GrasshopperDeveloperSettings → add the folder  bin/Debug/net7.0-windows/  (Rhino 8 Win;
      Rhino must be on .NET Core 8 — see pr-rhino-test's runtime preflight) or  bin/Debug/net48/  (Rhino 7).
+     Rhino 9 uses the Rhino 8 builds:  net7.0-windows/  on Windows,  net7.0/  on Mac (also Rhino 8 Mac).
   2. Restart Rhino, open Grasshopper, drop [Plugin]Auth, paste your token, press the button.
   3. Reply "works" (Status = 200 / OK) or paste the exact Status / error text.
 ```

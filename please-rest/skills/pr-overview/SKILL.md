@@ -80,7 +80,7 @@ could be ambiguous. todo items tagged `[SHIP]` (docs / GitHub / package) are pip
   `PLEASE_REST_TOKEN` (never pass the token as an argument). `run_all_tests` / `retest_entries` take
   `seed_ids`; PARTIAL entries are listed, not fired; each `test_result` has `error_body`.
 - **`pr-icon-generator`** — renders 24×24 component icons and a 16×16 plugin icon from `icons.json`,
-  and injects them into `Resources.resx` (Windows-only injection). `preview_backgrounds` renders every
+  and injects them into `Resources.resx` (any OS). `preview_backgrounds` renders every
   shape in each fill style (gradient / solid / none) to a labelled contact sheet, so the options are
   seen before one is chosen. `"custom": true` skips a hand-made icon; `"background": {}` removes the
   inherited background. Background shapes are SVG artwork in

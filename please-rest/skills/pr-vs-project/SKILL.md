@@ -58,6 +58,16 @@ Targets are the three real Grasshopper frameworks. **Rhino 7 = `net48`**, **Rhin
 > Moving to `net8.0-windows;net8.0;net48` is a deliberate, separate change (also bumps the
 > `Grasshopper` NuGet floor and `System.Drawing.Common`) — do not do it ad hoc inside a build.
 
+> **Rhino 9 needs no fourth target.** Rhino 9 runs on .NET 10 and loads the Rhino 8 builds by
+> roll-forward: `net7.0-windows` on Windows, `net7.0` on Mac. Verified on Rhino 9.1 Mac (.NET 10.0.2)
+> with this exact csproj: the `.gha` loads, preserialized Bitmap resources resolve (assembly icon,
+> category icon, component icons), `ButtonComponent`'s custom attributes render and fire, and
+> `HttpClient` + Newtonsoft.Json calls return. Keep the `Grasshopper` 8.0 NuGet floor — referencing
+> the 9.x package would lock Rhino 8 out for no gain.
+>
+> **SDK.** .NET SDK 8.x is the documented baseline; SDK 10.x also builds all three TFMs clean
+> (0 warnings), on macOS included — a machine with only SDK 10 does not need SDK 8 installed.
+
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -244,7 +254,9 @@ dotnet build -c Debug -f net7.0           # Rhino 8 Mac  (build-checks the Mac t
   `System.Resources.Extensions`) on `net48` and `net7.0` up front — catching dogfood F4 at Phase 8
   instead of mid-Phase-11
 - The `net7.0` (Mac) target build-checks on Windows via `EnableWindowsTargeting`; a full Mac runtime
-  test is Human Gate 7, not this skill
+  test is Human Gate 7, not this skill. On macOS it is the other way round: all three targets build
+  (`net48` via the reference-assemblies package, `net7.0-windows` via `EnableWindowsTargeting`), and
+  `net7.0` is the one the local Rhino 8 / 9 loads
 - Report a short matrix:
 
 ```
