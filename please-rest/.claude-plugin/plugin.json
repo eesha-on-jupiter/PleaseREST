@@ -1,7 +1,7 @@
 {
   "name": "please-rest",
   "displayName": "PleaseREST",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Politely turns any REST API into a Grasshopper plugin — so you can take that much needed rest. Automates the repeatable parts: API mapping, call validation, codegen, icons, tests, and Food4Rhino publish. You plan, review, and test. PleaseREST does the rest.",
   "author": {
     "name": "Eesha Jain",

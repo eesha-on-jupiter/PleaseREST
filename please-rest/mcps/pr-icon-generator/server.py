@@ -29,6 +29,7 @@ this file is the starting point pr-icons copies; it is never rendered directly.
 import io
 import json
 import math
+import base64
 import platform
 import re
 import subprocess
@@ -992,6 +993,107 @@ async def generate_plugin_icon(
     except Exception as e:
         return f"Error: {e}"
 
+# ── Resources.resx / Designer.cs writers ─────────────────────────────────────
+
+RESX_SKELETON = """<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+"""
+
+RESX_BITMAP_TYPE = "System.Drawing.Bitmap, System.Drawing"
+RESX_BYTEARRAY_MIME = "application/x-microsoft.net.object.bytearray.base64"
+
+
+def write_resx_bitmap(resx_path: Path, resource_name: str, png_bytes: bytes) -> None:
+    """
+    Add or replace one Bitmap resource in a .resx without .NET — the macOS/Linux path of
+    add_to_resources. Writes the node ResXResourceWriter.AddResource(name, Bitmap) writes:
+    type System.Drawing.Bitmap, the PNG bytes base64-encoded under the bytearray mimetype.
+    Every other node in the file is left byte-for-byte as it was. A resx with no <resheader>
+    (an empty `<root/>` scaffold) gets the standard headers, without which MSBuild's
+    GenerateResource rejects the file.
+    """
+    text = resx_path.read_text(encoding="utf-8-sig") if resx_path.exists() else ""
+    if "<resheader" not in text:
+        inner = re.search(r"<root[^>]*>(.*)</root>", text, re.S)
+        kept = inner.group(1).strip("\n") if inner else ""
+        text = RESX_SKELETON.replace("</root>", (kept + "\n" if kept.strip() else "") + "</root>")
+
+    b64 = base64.b64encode(png_bytes).decode("ascii")
+    lines = "\n".join("        " + b64[i:i + 80] for i in range(0, len(b64), 80))
+    node = (f'  <data name="{resource_name}" type="{RESX_BITMAP_TYPE}" '
+            f'mimetype="{RESX_BYTEARRAY_MIME}">\n'
+            f"    <value>\n{lines}\n</value>\n"
+            f"  </data>\n")
+
+    existing = re.compile(
+        rf'[ \t]*<data\s+name="{re.escape(resource_name)}"[^>]*?(?:/>|>.*?</data>)[ \t]*\r?\n?', re.S)
+    text = existing.sub("", text)
+    close = text.rfind("</root>")
+    if close < 0:
+        raise ValueError(f"{resx_path} has no closing </root> — not a .resx file")
+    head = text[:close]
+    if head and not head.endswith("\n"):
+        head += "\n"
+    resx_path.write_text(head + node + text[close:], encoding="utf-8")
+
+
+def _add_designer_property(resx_path: Path, resource_name: str) -> str:
+    """Add the strongly-typed Bitmap property to Resources.Designer.cs (idempotent)."""
+    designer_path = resx_path.parent / "Resources.Designer.cs"
+    if not designer_path.exists():
+        return f"Added '{resource_name}' to Resources.resx (Resources.Designer.cs not found — skipped)"
+
+    designer_text = designer_path.read_text(encoding="utf-8")
+    property_block = (
+        f"\n"
+        f"        /// <summary>\n"
+        f"        ///   Looks up a localized resource of type System.Drawing.Bitmap.\n"
+        f"        /// </summary>\n"
+        f"        internal static System.Drawing.Bitmap {resource_name} {{\n"
+        f"            get {{\n"
+        f"                object obj = ResourceManager.GetObject(\"{resource_name}\", resourceCulture);\n"
+        f"                return ((System.Drawing.Bitmap)(obj));\n"
+        f"            }}\n"
+        f"        }}"
+    )
+
+    # Already declared (any comment/whitespace style)? Then the resx is updated and the
+    # Designer needs nothing — appending again would be a duplicate member (CS0102).
+    existing = re.compile(
+        rf"internal\s+static\s+(?:System\.Drawing\.)?Bitmap\s+{re.escape(resource_name)}\b")
+    if existing.search(designer_text):
+        return (f"Added '{resource_name}' to Resources.resx "
+                f"(Resources.Designer.cs already declares it — unchanged)")
+
+    stripped = designer_text.rstrip()
+    # Insert before the class's closing brace (indented) followed by the namespace's brace.
+    m = None
+    for cand in re.finditer(r"\n([ \t]*)\}\s*\n[ \t]*\}\s*$", stripped):
+        m = cand
+    if m is None:
+        return (f"Added '{resource_name}' to Resources.resx, but Resources.Designer.cs has no "
+                f"recognisable class/namespace closing braces — add the property by hand:\n"
+                f"{property_block.strip()}")
+    insert_at = m.start()
+    designer_text = stripped[:insert_at] + "\n" + property_block + stripped[insert_at:] + "\n"
+    designer_path.write_text(designer_text, encoding="utf-8")
+
+    return f"Added '{resource_name}' to Resources.resx and Resources.Designer.cs"
+
+
 # ── Tool: add_to_resources ───────────────────────────────────────────────────
 
 @mcp.tool()
@@ -1001,14 +1103,13 @@ def add_to_resources(component_name: str, config_path: str | None = None) -> str
     property to Resources.Designer.cs. Use the component name (e.g. 'FindBoard') or the
     plugin icon's base name (e.g. 'AcmeConnectLogo'). Idempotent.
 
-    Windows-only: the .resx write shells out to PowerShell + System.Windows.Forms
-    (ResXResourceWriter). On macOS/Linux this returns an error — add the resource from
-    Visual Studio / by hand there.
+    On Windows the .resx write shells out to PowerShell + System.Windows.Forms
+    (ResXResourceWriter). On macOS/Linux, where neither exists, the same <data> node is
+    written directly (write_resx_bitmap) — the Bitmap is stored as PNG bytes in the
+    bytearray.base64 form ResXResourceWriter itself emits.
     """
     try:
-        if platform.system() != "Windows":
-            return ("add_to_resources is Windows-only (uses PowerShell + System.Windows.Forms "
-                    "ResXResourceWriter). Add the PNG to Resources.resx by hand on this OS.")
+        is_windows = platform.system() == "Windows"
         config, cfg_file = load_config(config_path)
         prefix    = config["plugin_prefix"]
         icons_dir = (Path(config["resources_path"]) if Path(config["resources_path"]).is_absolute()
@@ -1023,6 +1124,10 @@ def add_to_resources(component_name: str, config_path: str | None = None) -> str
             return f"Icon not found: {png_path} — run generate_icon first."
         if not resx_path.exists():
             return f"Resources.resx not found: {resx_path}"
+
+        if not is_windows:
+            write_resx_bitmap(resx_path, resource_name, png_path.read_bytes())
+            return _add_designer_property(resx_path, resource_name)
 
         ps_png  = str(png_path).replace("'", "''")
         ps_resx = str(resx_path).replace("'", "''")
@@ -1062,46 +1167,7 @@ Write-Output 'OK'
         if result.returncode != 0 or "OK" not in result.stdout:
             return f"PowerShell error:\n{result.stderr.strip() or result.stdout.strip()}"
 
-        designer_path = resx_path.parent / "Resources.Designer.cs"
-        if not designer_path.exists():
-            return f"Added '{resource_name}' to Resources.resx (Resources.Designer.cs not found — skipped)"
-
-        designer_text = designer_path.read_text(encoding="utf-8")
-        property_block = (
-            f"\n"
-            f"        /// <summary>\n"
-            f"        ///   Looks up a localized resource of type System.Drawing.Bitmap.\n"
-            f"        /// </summary>\n"
-            f"        internal static System.Drawing.Bitmap {resource_name} {{\n"
-            f"            get {{\n"
-            f"                object obj = ResourceManager.GetObject(\"{resource_name}\", resourceCulture);\n"
-            f"                return ((System.Drawing.Bitmap)(obj));\n"
-            f"            }}\n"
-            f"        }}"
-        )
-
-        # Already declared (any comment/whitespace style)? Then the resx is updated and the
-        # Designer needs nothing — appending again would be a duplicate member (CS0102).
-        existing = re.compile(
-            rf"internal\s+static\s+(?:System\.Drawing\.)?Bitmap\s+{re.escape(resource_name)}\b")
-        if existing.search(designer_text):
-            return (f"Added '{resource_name}' to Resources.resx "
-                    f"(Resources.Designer.cs already declares it — unchanged)")
-
-        stripped = designer_text.rstrip()
-        # Insert before the class's closing brace (indented) followed by the namespace's brace.
-        m = None
-        for cand in re.finditer(r"\n([ \t]*)\}\s*\n[ \t]*\}\s*$", stripped):
-            m = cand
-        if m is None:
-            return (f"Added '{resource_name}' to Resources.resx, but Resources.Designer.cs has no "
-                    f"recognisable class/namespace closing braces — add the property by hand:\n"
-                    f"{property_block.strip()}")
-        insert_at = m.start()
-        designer_text = stripped[:insert_at] + "\n" + property_block + stripped[insert_at:] + "\n"
-        designer_path.write_text(designer_text, encoding="utf-8")
-
-        return f"Added '{resource_name}' to Resources.resx and Resources.Designer.cs"
+        return _add_designer_property(resx_path, resource_name)
     except Exception as e:
         return f"Error: {e}"
 

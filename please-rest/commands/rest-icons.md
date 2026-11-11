@@ -35,9 +35,8 @@ This renders what `icons.json` already says. It does **not** re-author `icons.js
 
 5. Render, per component:
    `generate_icon(component_name, config_path)` → then `add_to_resources(component_name, config_path)`
-   Print Restling progress as each one lands. `add_to_resources` shells out to PowerShell and is
-   **Windows-only** — on macOS it returns a clear error and the PNGs are still written, so the resx
-   embed has to happen on a Windows machine.
+   Print Restling progress as each one lands. `add_to_resources` works on every OS: PowerShell
+   `ResXResourceWriter` on Windows, a direct `.resx` write (same `<data>` node) on macOS / Linux.
 
 6. Render the two plugin-level icons last, as separate steps, when no component argument was given:
    - `generate_plugin_icon(config_path)` → `add_to_resources("[PluginName]Logo", config_path)`

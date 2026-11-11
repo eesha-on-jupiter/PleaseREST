@@ -7,7 +7,7 @@ description: Build the demo .gh files for a generated Grasshopper plugin and liv
 
 Runs in **Phase 12**, after `pr-build` (unit tests green) and **before HUMAN GATE 6**.
 
-Two jobs, in order, against a **live Rhino 8 + Grasshopper** session driven through a Grasshopper
+Two jobs, in order, against a **live Rhino 8 or 9 + Grasshopper** session driven through a Grasshopper
 MCP bridge:
 
 1. **Build the demo `.gh` files** into `demos/` — each canvas built once.
@@ -94,6 +94,44 @@ of **.NET Core 8** — no error, the component just never appears in the Plugins
 
 If the runtime can't be moved to Core 8 (locked machine, no `SetDotNetRuntime`), the automated MCP
 path is blocked — fall back to manual Gate 6 (see *Graceful degradation*).
+
+### Rhino 9 (and any Mac) — what differs
+
+Verified on Rhino 9.1 Mac with the official bridge (Rhino-MCP-Platform 0.4.0):
+
+- **Runtime.** Rhino 9 is .NET 10 only — there is no Framework mode, so the preflight above is a
+  Windows / Rhino 8 concern. The plugin build to load is **`net7.0-windows`** on Windows and
+  **`net7.0`** on Mac (Rhino 8 Mac too); it rolls forward onto .NET 10.
+- **Starting the bridge.** `MCPConnect` only opens the "connect your agent" dialog. The listener in
+  an already-open Rhino is started by **`MCPStart`** (default port 10500) — until then the router's
+  `list_slots` is empty and every tool call hangs or tries to spawn a second Rhino. Run `MCPStart`
+  once per Rhino launch; re-check with `list_slots` before the first tool call.
+- **Loading the dev build without a restart.** Rather than `GrasshopperDeveloperSettings` + a Rhino
+  restart, load the freshly built `.gha` into the running Grasshopper through the bridge's C# tool:
+
+  ```csharp
+  var cs = Grasshopper.Instances.ComponentServer;
+  var load = cs.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public)
+               .First(m => m.Name == "LoadGHA");               // LoadGHA(GH_ExternalFile, bool)
+  var file = Activator.CreateInstance(load.GetParameters()[0].ParameterType, new object[] { ghaPath });
+  load.Invoke(cs, new object[] { file, false });                // true on success
+  ```
+
+  Then confirm with `cs.Libraries` / `cs.EmitObjectProxy(componentGuid)` and print
+  `cs.LoadingExceptions`. An assembly can be loaded **once per Rhino process** — after a rebuild in
+  the auto-fix loop, the same `.gha` name will not reload; restart Rhino (and `MCPStart` again), or
+  ask the user to. On Mac a "new slot" from the bridge is a new document in the *same* process, so
+  it does not give a clean reload either.
+- **Pressing a `ButtonComponent`.** The bridge has no canvas-click, but its C# tool can call the
+  component's public `TriggerButton()` — so on this bridge the write/HTTP components *are*
+  auto-testable (see the F7 note under Job B):
+
+  ```csharp
+  var doc = Grasshopper.Instances.ActiveCanvas.Document;
+  var c = (IGH_Component)doc.Objects.First(o => o.InstanceGuid == id);
+  c.GetType().GetMethod("TriggerButton").Invoke(c, null);       // solves synchronously
+  // then read c.Params.Output[i].VolatileData and c.RuntimeMessages(...)
+  ```
 
 ---
 

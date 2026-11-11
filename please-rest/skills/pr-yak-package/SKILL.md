@@ -16,12 +16,21 @@ root — never `/dist/`).
 first hit (stop with a clear message if none):
 
 ```
-Windows:  C:\Program Files\Rhino 8\System\Yak.exe
+Windows:  C:\Program Files\Rhino 9\System\Yak.exe
+          C:\Program Files\Rhino 8\System\Yak.exe
           C:\Program Files\Rhino 7\System\Yak.exe
-macOS:    /Applications/Rhino 8.app/Contents/Resources/bin/yak
+macOS:    /Applications/Rhino 9.app/Contents/Resources/bin/yak
+          /Applications/Rhino 8.app/Contents/Resources/bin/yak
           /Applications/Rhino 7.app/Contents/Resources/bin/yak
 fallback: `yak` on PATH (user added it)
 ```
+
+**Rhino 9.** Any of these yaks builds all three packages — the `rh7_0` / `rh8_0` tag comes from the
+Grasshopper reference the `.gha` was compiled against, not from the Rhino that owns the yak
+(verified: Rhino 9.1's yak 0.19 names the `net7.0` build `*-rh8_0-mac.yak`). There is **no separate
+`rh9_0` package**: a distribution tag is a minimum version, so Rhino 9 installs the `rh8_0-win` /
+`rh8_0-mac` packages, and Grasshopper 9 picks up the unpacked folder under
+`packages/9.0/<name>/<version>/` as an assembly folder.
 
 Refer to it as `$YAK` below. If nothing is found: stop and tell the user where yak normally lives
 and that Rhino 7+ must be installed on the packaging machine (or run `/rest-package` on a machine

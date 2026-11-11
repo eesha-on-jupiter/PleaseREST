@@ -110,4 +110,4 @@ the live Rhino test). The full design lives in
 [`PleaseREST-spec.md`](../PleaseREST-spec.md); contributor notes in
 [`CLAUDE.md`](CLAUDE.md); what changed and when in [`CHANGELOG.md`](CHANGELOG.md).
 
-**Author:** Eesha Jain · **Version:** 1.0.0
+**Author:** Eesha Jain · **Version:** 1.1.0

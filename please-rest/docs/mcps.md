@@ -97,7 +97,8 @@ area: the full 24px canvas with no background, or the authored glyph box on a ba
 `icons.json` is re-read from disk on every call (never cached), so edits are always picked up.
 Always pass `config_path` = the plugin's `icons.json`. A component with `"custom": true` is
 skipped by `generate_icon` (a hand-made PNG in `Icons/` is kept); `"background": {}` really removes
-the inherited background. `add_to_resources` shells out to PowerShell and is **Windows-only**.
+the inherited background. `add_to_resources` works on every OS — PowerShell `ResXResourceWriter` on Windows, a direct `.resx`
+write of the same `<data>` node on macOS / Linux.
 
 **Background shapes are artwork, not code.** They're the SVG files in the MCP's `backgrounds/`
 folder, addressed by filename slug — `bg-icon_Arrow-Square.svg` becomes `"type": "arrow-square"`.
